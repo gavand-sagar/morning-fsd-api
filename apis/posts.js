@@ -2,7 +2,8 @@
 
 import { Router } from 'express';
 import fs from 'fs'
-import { getAllItemsFromCollection, saveItemInCollection } from '../utilities/mongo-wrapper.js';
+import { ObjectId } from 'mongodb';
+import { getAllItemsFromCollection, saveItemInCollection, updateItemFromCollection } from '../utilities/mongo-wrapper.js';
 
 const postRoutes = Router();
 
@@ -19,7 +20,7 @@ postRoutes.get('/posts/:id', async (req, res) => {
 
     let id = req.params.id;
 
-    let postsList = await getAllItemsFromCollection("posts", { _id: id })
+    let postsList = await getAllItemsFromCollection("posts", { _id: ObjectId(id) })
 
     return res.json(postsList[0])
 })
@@ -68,30 +69,32 @@ postRoutes.put('/posts', (req, res) => {
 
 
 //likes
-postRoutes.patch('/posts/:id/like', (req, res) => {
+postRoutes.patch('/posts/:id/like', async (req, res) => {
 
     let id = req.params.id;
     let username = req.body.username;
     //get item from database
-    let postsList = JSON.parse(fs.readFileSync('./data/posts.json'))
-    let index = postsList.findIndex(x => x.id == id)
+    let posts = await getAllItemsFromCollection('posts', { _id: ObjectId(id) })
 
     //checking if found
-    if (index > -1) {
+    if (posts && posts.length > 0) {
 
-        let post = postsList[index];
+        console.log('post preset')
 
+        let post = posts[0];
         if (!post.likedUsers.some(x => x == username)) {
 
-            //update likes        
-            postsList[index].likedUsers.push(username)
-            postsList[index].likes = postsList[index].likedUsers.length;
-            //save the file
-            fs.writeFileSync('./data/posts.json', JSON.stringify(postsList))
+            //update likes on server     
+            post.likedUsers.push(username)
+            post.likes = post.likedUsers.length;
+            
+            
+            //update likes on database
+            await updateItemFromCollection("posts", { _id: ObjectId(id) }, post)
             //done
             return res.json({
                 result: true,
-                newLikes: postsList[index].likes
+                newLikes: post.likes
             })
         } else {
             return res.json({

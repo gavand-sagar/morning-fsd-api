@@ -69,3 +69,22 @@ export async function deleteItemFromCollection(collection, matchQuery) {
         });
     })
 }
+
+
+
+export async function updateItemFromCollection(collection, matchQuery, partial) {
+    return new Promise((resolve, reject) => {
+        MongoClient.connect(process.env.DB_CONNECTION_STRING, function (err, db) {
+            if (err) {
+                reject(err)
+                throw err;
+            }
+            var dbo = db.db(process.env.DB_NAME);
+
+            dbo.collection(collection).updateOne(matchQuery, { $set: partial })
+                .then(res => {
+                    resolve(res)
+                }).catch(er => reject(er))
+        });
+    })
+}

@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import userRouts from './apis/users.js'
 import postRoutes from './apis/posts.js'
 import miscRoutes from './apis/misc.js'
+import questionRoutes from './apis/questions.js'
 
 dotenv.config('.env')
 
@@ -16,6 +17,7 @@ app.use(cors()) // enable our server to receive requests from any front end
 app.use('/', userRouts)
 app.use('/', postRoutes)
 app.use('/', miscRoutes)
+app.use('/', questionRoutes)
 
 
 app.listen(process.env.PORT, () => {
