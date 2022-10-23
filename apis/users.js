@@ -1,19 +1,17 @@
 
 import { Router } from 'express';
-import fs from 'fs'
+import { getAllItemsFromCollection, saveItemInCollection } from '../utilities/mongo-wrapper.js';
 
 
 const userRoutes = Router();
 
-userRoutes.get('/authenticate', (req, res) => {
+userRoutes.get('/authenticate', async (req, res) => {
 
 
-    let users = JSON.parse(fs.readFileSync('./data/users.json'))
+    const matching = await getAllItemsFromCollection("users",
+        { username: req.query.username, password: req.query.password })
 
-    const isAuthenticated = users.some(x =>
-        x.username == req.query.username
-        && x.password == req.query.password)
-
+    const isAuthenticated = matching && matching.length > 0
     let responseObj = {
         result: isAuthenticated
     }
@@ -22,13 +20,13 @@ userRoutes.get('/authenticate', (req, res) => {
 
 })
 
-userRoutes.post('/create-new-user', (req, res) => {
+userRoutes.post('/create-new-user', async (req, res) => {
 
     //added entry in users array
 
-    let users = JSON.parse(fs.readFileSync('./data/users.json'))
+    const matching = await getAllItemsFromCollection("users", { username: req.body.username })
 
-    const isPresent = users.some(x => x.username == req.body.username)
+    const isPresent = matching && matching.length > 0
 
     if (isPresent == true) {
 
@@ -39,8 +37,7 @@ userRoutes.post('/create-new-user', (req, res) => {
     } else {
         let obj = req.body
 
-        users.push(obj)
-        fs.writeFileSync('./data/users.json', JSON.stringify(users))
+        await saveItemInCollection("users", obj)
 
         return res.json({
             result: true

@@ -2,49 +2,42 @@
 
 import { Router } from 'express';
 import fs from 'fs'
-import { generateUUID } from '../utilities/utilities.js'
+import { getAllItemsFromCollection, saveItemInCollection } from '../utilities/mongo-wrapper.js';
 
 const postRoutes = Router();
 
 
 // get all
-postRoutes.get('/posts', (req, res) => {
-    let postsList = JSON.parse(fs.readFileSync('./data/posts.json'))
+postRoutes.get('/posts', async (req, res) => {
+    let postsList = await getAllItemsFromCollection("posts", {})
     return res.json(postsList)
 })
 
 
 //get single
-postRoutes.get('/posts/:id', (req, res) => {
+postRoutes.get('/posts/:id', async (req, res) => {
 
     let id = req.params.id;
 
-    let postsList = JSON.parse(fs.readFileSync('./data/posts.json'))
+    let postsList = await getAllItemsFromCollection("posts", { _id: id })
 
-    let post = postsList.find(x => x.id == id)
-
-    return res.json(post)
+    return res.json(postsList[0])
 })
 
 
 
 //create 
-postRoutes.post('/posts', (req, res) => {
+postRoutes.post('/posts', async (req, res) => {
 
-    //added entry in users array
-
-    let postsList = JSON.parse(fs.readFileSync('./data/posts.json'))
 
     let obj = req.body;
 
-    obj["id"] = generateUUID()
     obj["likes"] = 0;
     obj["likedUsers"] = []
     obj["comments"] = []
 
 
-    postsList.push(obj)
-    fs.writeFileSync('./data/posts.json', JSON.stringify(postsList))
+    await saveItemInCollection("posts", obj)
 
     return res.json({
         result: true
