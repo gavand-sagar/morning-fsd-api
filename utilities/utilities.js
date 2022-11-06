@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 export function generateUUID() { // Public Domain/MIT
     var d = new Date().getTime();//Timestamp
     var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
@@ -13,3 +15,19 @@ export function generateUUID() { // Public Domain/MIT
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
 }
+
+
+export function encryptString(string){
+    var hash = crypto.createHash('md5').update(string).digest('hex');
+    return hash
+}
+
+
+
+
+
+
+
+
+
+

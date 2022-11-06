@@ -1,6 +1,7 @@
 
 import { Router } from 'express';
 import { getAllItemsFromCollection, saveItemInCollection } from '../utilities/mongo-wrapper.js';
+import { encryptString } from '../utilities/utilities.js';
 
 
 const userRoutes = Router();
@@ -9,7 +10,7 @@ userRoutes.get('/authenticate', async (req, res) => {
 
 
     const matching = await getAllItemsFromCollection("users",
-        { username: req.query.username, password: req.query.password })
+        { username: req.query.username, password: encryptString(req.query.password) })
 
     const isAuthenticated = matching && matching.length > 0
     let responseObj = {
@@ -36,6 +37,7 @@ userRoutes.post('/create-new-user', async (req, res) => {
 
     } else {
         let obj = req.body
+        obj.password = encryptString(obj.password)
 
         await saveItemInCollection("users", obj)
 

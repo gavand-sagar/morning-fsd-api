@@ -21,6 +21,22 @@ export async function getAllItemsFromCollection(collectionName, query = {}) {
 }
 
 
+export async function getSingleItemFromCollection(collectionName, query = {}) {
+    return new Promise((resolved, reject) => {
+        MongoClient.connect(process.env.DB_CONNECTION_STRING, function (connection_error, db) {
+            if (connection_error) {
+                reject(connection_error)
+                throw connection_error;
+            }
+            var dbo = db.db(process.env.DB_NAME);
+            dbo.collection(collectionName).findOne(query)
+                .then(data => resolved(data))
+                .catch(err => reject(err))
+        });
+    });
+}
+
+
 export async function saveItemInCollection(collectionName, item) {
 
     return new Promise((resolve, reject) => {

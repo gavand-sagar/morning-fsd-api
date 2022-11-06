@@ -3,7 +3,7 @@
 import { Router } from 'express';
 import fs from 'fs'
 import { ObjectId } from 'mongodb';
-import { getAllItemsFromCollection, saveItemInCollection, updateItemFromCollection } from '../utilities/mongo-wrapper.js';
+import { getAllItemsFromCollection, getSingleItemFromCollection, saveItemInCollection, updateItemFromCollection } from '../utilities/mongo-wrapper.js';
 
 const postRoutes = Router();
 
@@ -74,20 +74,14 @@ postRoutes.patch('/posts/:id/like', async (req, res) => {
     let id = req.params.id;
     let username = req.body.username;
     //get item from database
-    let posts = await getAllItemsFromCollection('posts', { _id: ObjectId(id) })
+    let post  = await getSingleItemFromCollection('posts', { _id: ObjectId(id) })
 
     //checking if found
-    if (posts && posts.length > 0) {
-
-        console.log('post preset')
-
-        let post = posts[0];
+    if (post) {
         if (!post.likedUsers.some(x => x == username)) {
-
             //update likes on server     
             post.likedUsers.push(username)
-            post.likes = post.likedUsers.length;
-            
+            post.likes = post.likedUsers.length;            
             
             //update likes on database
             await updateItemFromCollection("posts", { _id: ObjectId(id) }, post)
