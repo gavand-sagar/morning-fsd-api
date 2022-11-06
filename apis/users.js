@@ -1,4 +1,4 @@
-
+import jwt from 'jsonwebtoken'
 import { Router } from 'express';
 import { getAllItemsFromCollection, saveItemInCollection } from '../utilities/mongo-wrapper.js';
 import { encryptString } from '../utilities/utilities.js';
@@ -13,8 +13,16 @@ userRoutes.get('/authenticate', async (req, res) => {
         { username: req.query.username, password: encryptString(req.query.password) })
 
     const isAuthenticated = matching && matching.length > 0
+
+    let token = ''
+    if (isAuthenticated) {
+        token = jwt.sign({
+            data: req.query.username
+          }, process.env.SECRET_KEY, { expiresIn: '1h' });
+    }
     let responseObj = {
-        result: isAuthenticated
+        result: isAuthenticated,
+        token:token
     }
 
     return res.json(responseObj)

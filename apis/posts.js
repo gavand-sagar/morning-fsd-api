@@ -9,7 +9,7 @@ const postRoutes = Router();
 
 
 // get all
-postRoutes.get('/posts', async (req, res) => {
+postRoutes.get('/posts', async (req, res) => {   
     let postsList = await getAllItemsFromCollection("posts", {})
     return res.json(postsList)
 })
