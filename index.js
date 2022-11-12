@@ -28,7 +28,7 @@ const authenticator = async (req, res, next) => {
 }
 
 app.use('/', userRouts)
-app.use('/', authenticator, postRoutes)
+app.use('/', postRoutes)
 app.use('/', miscRoutes)
 app.use('/', questionRoutes)
 

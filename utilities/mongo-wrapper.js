@@ -21,6 +21,32 @@ export async function getAllItemsFromCollection(collectionName, query = {}) {
 }
 
 
+
+export async function getPagedItemsFromCollection(collectionName, pageNumber, query = {}) {
+    return new Promise((resolved, reject) => {
+        MongoClient.connect(process.env.DB_CONNECTION_STRING, function (connection_error, db) {
+            if (connection_error) {
+                reject(connection_error)
+                throw connection_error;
+            }
+            var dbo = db.db(process.env.DB_NAME);
+
+            let limitQty = 5
+            let skipQty = (pageNumber-1) * limitQty;
+
+            dbo.collection(collectionName).find(query).skip(skipQty).limit(limitQty).toArray(function (find_error, result) {
+                if (find_error) {
+                    reject(find_error)
+                    throw find_error;
+                }
+                db.close();
+                resolved(result)
+            });
+        });
+    });
+}
+
+
 export async function getSingleItemFromCollection(collectionName, query = {}) {
     return new Promise((resolved, reject) => {
         MongoClient.connect(process.env.DB_CONNECTION_STRING, function (connection_error, db) {
